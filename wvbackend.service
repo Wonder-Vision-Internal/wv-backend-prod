@@ -1,0 +1,24 @@
+[Unit]
+Description=Wondervision Backend
+
+[Service]
+ExecStart=/var/www/backend/server.js
+Restart=always
+User=nobody
+# Note Debian/Ubuntu uses 'nogroup', RHEL/Fedora uses 'nobody'
+Group=nogroup
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+Environment=BASE_URL=https://wondervision.in/api/
+Environment=APP_NAME="Wonder Vision"
+Environment=PORT=3000
+Environment=DATABASE_STRING="mongodb+srv://sales:mp3XItVgUtnHmpEq@wvprod.i9towea.mongodb.net/WonderShare"
+Environment=WHITE_LISTED=["http://localhost:3001","http://localhost:3000","http://43.204.249.34","http://127.0.0.1:5500/","https://wondervision.in","http://localhost:4000","http://134.209.149.195"]
+Environment=JWT_CODE=b1fff9c30852cd9901958a9afeeb0a74
+Environment=M_ID=M222IKYLM7EV8
+Environment=PP_HOST=https://api.phonepe.com/apis/hermes/pg/v1/
+Environment=SALT_KEY=38705ada-0d89-4c5c-aaa8-245bbe4ee8ea
+WorkingDirectory=/var/www/backend
+
+[Install]
+WantedBy=multi-user.target
