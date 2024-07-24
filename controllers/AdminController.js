@@ -7,30 +7,35 @@ const sidebarModel = require('../Models/sidebar.schema')
 
 
 const signUp = async (req, res) => {
-    const errors = validationResult(req)
-    if (errors.isEmpty()) {
-        console.log('body', req.body);
-        const userObj = {
-            ...req.body,
-            password: bcrypt.hashSync(req.body.password, 10),
-            user_type: 'user',
-            created_by: '1'
-        }
-        const isUserExist = await userModel.findOne({ mail: req.body.mail })
-        if (isUserExist) {
-            res.status(400).json({ message: 'Email Id already exists' })
+    try {
+        const errors = validationResult(req)
+        if (errors.isEmpty()) {
+            console.log('body', req.body);
+            const userObj = {
+                ...req.body,
+                password: bcrypt.hashSync(req.body.password, 10),
+                user_type: 'user',
+                created_by: '1'
+            }
+            const isUserExist = await userModel.findOne({ mail: req.body.mail })
+            if (isUserExist) {
+                res.status(400).json({ message: 'Email Id already exists' })
+            } else {
+                userModel(userObj).save().then(() => {
+                    console.log('then');
+                    res.status(200).json({ message: 'User Registered Successfully' })
+                }).catch((err) => {
+                    console.log('catch');
+                    res.status(500).json({ Error: err, message: 'Registration Failed' })
+                })
+            }
         } else {
-            userModel(userObj).save().then(() => {
-                console.log('then');
-                res.status(200).json({ message: 'User Registered Successfully' })
-            }).catch((err) => {
-                console.log('catch');
-                res.status(500).json({ Error: err, message: 'Registration Failed' })
-            })
+            console.log('errors', errors.array());
+            res.status(422).json({ errors: errors.array() })
         }
-    } else {
-        console.log('errors', errors.array());
-        res.status(422).json({ errors: errors.array() })
+    
+    }catch (error) {
+        res.status(500).send({ message: error.message });
     }
 
 
@@ -39,49 +44,53 @@ const signUp = async (req, res) => {
 
 
 const login = async (req, res) => {
-    console.log('req.body', req.body);
-    const isUserExist = await userModel.findOne({ mail: req.body.mail })
+    try {
+        const isUserExist = await userModel.findOne({ mail: req.body.mail })
 
-    console.log('isuserExist', isUserExist);
-    const errors = validationResult(req)
-    if (errors.isEmpty()) {
-        if (isUserExist) {
-            const obj = { ...req.body, userType: isUserExist.user_type }
-            const token = jwt.sign(obj, process.env.JWT_CODE,
-                {
-                    expiresIn: '30m'
-                })
-            if (bcrypt.compareSync(req.body.password, isUserExist.password)) {
-
-                res.status(200).json({
-                    message: 'Login Successful',
-                    token: token,
-                    name: isUserExist.name,
-                    mail: isUserExist.mail,
-                    points:isUserExist.user_type==='admin' || isUserExist.points ==='' ? '' : isUserExist.points,
-                    user_type: isUserExist.user_type === 'admin' ? 'admin' : isUserExist.emp_id,
-                    status: isUserExist.user_type === 'admin' ? 1 :
-                        isUserExist.user_type === 'sub-admin' ? 2 : isUserExist.user_type === 'user' ? 3 : null
-                })
+    
+        const errors = validationResult(req)
+        if (errors.isEmpty()) {
+            if (isUserExist) {
+                const obj = { ...req.body, userType: isUserExist.user_type }
+                const token = jwt.sign(obj, process.env.JWT_CODE,
+                    {
+                        expiresIn: '30m'
+                    })
+                if (bcrypt.compareSync(req.body.password, isUserExist.password)) {
+    
+                    res.status(200).json({
+                        message: 'Login Successful',
+                        token: token,
+                        name: isUserExist.name,
+                        mail: isUserExist.mail,
+                        points:isUserExist.user_type==='admin' || isUserExist.points ==='' ? '' : isUserExist.points,
+                        user_type: isUserExist.user_type === 'admin' ? 'admin' : isUserExist.emp_id,
+                        status: isUserExist.user_type === 'admin' ? 1 :
+                            isUserExist.user_type === 'sub-admin' ? 2 : isUserExist.user_type === 'user' ? 3 : null
+                    })
+                }
+                else {
+                    console.log('password does not match');
+                    res.status(500).json({
+                        message: 'Password Does Not Match',
+                        status: 0
+                    })
+                }
             }
             else {
-                console.log('password does not match');
                 res.status(500).json({
-                    message: 'Password Does Not Match',
-                    status: 0
+                    message: 'User Does Not Exist',
+                    status: -1
                 })
             }
         }
         else {
-            res.status(500).json({
-                message: 'User Does Not Exist',
-                status: -1
-            })
+            res.status(422).json({ errors: errors.array() })
         }
+    }catch (error) {
+        res.status(500).send({ message: error.message });
     }
-    else {
-        res.status(422).json({ errors: errors.array() })
-    }
+
 }
 
 const verifyToken = async (req, res) => {
@@ -94,33 +103,35 @@ const verifyToken = async (req, res) => {
 
 
 const getSidebarModules = async (req, res) => {
+    try {
+        let hashEmp = req.body.userType
+        let allUsers = await userModel.find()
+        let allModules = await sidebarModel.find()
+        
+        if (bcrypt.compareSync('admin', req.body.userType)) {
+            res.status(200).json({ sidemodules: allModules })
+        }
     
-    let hashEmp = req.body.userType
-    let allUsers = await userModel.find()
-    let allModules = await sidebarModel.find()
-    
-    if (bcrypt.compareSync('admin', req.body.userType)) {
-        res.status(200).json({ sidemodules: allModules })
+        else {       
+            allUsers.map((data) => {
+                let emp = data.emp_id
+                if (data.emp_id && bcrypt.compareSync(emp, hashEmp)) {
+                    
+                    userModel.findOne({ emp_id: data.emp_id })
+                        .then((x) => {
+                            res.status(200).json({ sidemodules: x.modules })
+                            return
+                        }).catch((err) => {
+                            res.status(500).json({ message: 'Unable To Find Modules', Error: err })
+                            return
+                        })
+                }
+            })
+        }
+    }catch (error) {
+        res.status(500).send({ message: error.message });
     }
 
-    else {       
-        allUsers.map((data) => {
-            let emp = data.emp_id
-            if (data.emp_id && bcrypt.compareSync(emp, hashEmp)) {
-                
-                userModel.findOne({ emp_id: data.emp_id })
-                    .then((x) => {
-                        res.status(200).json({ sidemodules: x.modules })
-                        return
-                    }).catch((err) => {
-                        res.status(500).json({ message: 'Unable To Find Modules', Error: err })
-                        return
-                    })
-            }
-        })
-    }
 }
-
-
 
 module.exports = { signUp, login, verifyToken, getSidebarModules }

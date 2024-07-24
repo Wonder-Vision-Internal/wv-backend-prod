@@ -3,20 +3,24 @@ const sidebarModel = require('../Models/sidebar.schema')
 const userModel = require('../Models/user.schema')
 
 const getallpermissions = async (req, res) => {
-
-    sidebarModel.find()
+    try {
+        sidebarModel.find()
         .then((data) => {
 
             res.status(200).json({ PermissionData: data })
         }).catch((err) => {
             res.status(500).json({ message: 'Failed To Load Permissions', Error: err })
         })
+    }catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+
 
 }
 
 
 const updatePermissions = async (req, res) => {
-    
+    try {
         let permissions = await JSON.parse(req.body.permissions)
     
         userModel.findOneAndUpdate({ emp_id: req.body.emp_id }, {
@@ -27,6 +31,10 @@ const updatePermissions = async (req, res) => {
             res.status(500).json({ message: 'Failed To Update Permissions',Error:err})
 
         })
+    }catch (error) {
+        res.status(500).send({ message: error.message });
+    }
+
         
 }
 

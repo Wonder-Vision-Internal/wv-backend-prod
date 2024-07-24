@@ -12,19 +12,19 @@ class BestThings {
             if (req.body.slug) {
                 postData.slug = req.body.slug;
             }
-    
+
             if (req.body.icon) {
                 postData.icon = req.body.icon;
             }
-    
+
             if (req.body.title) {
                 postData.title = req.body.title;
             }
-    
+
             await bestThingsModel.create(postData);
-    
+
             res.status(200).json({})
-        }catch(err) {
+        } catch (err) {
             res.status(500).json({})
         }
 
@@ -38,7 +38,7 @@ class BestThings {
 
             res.status(200).json({ data })
 
-        }catch(err) {
+        } catch (err) {
             res.status(500).json({})
         }
 
@@ -52,21 +52,21 @@ class BestThings {
             if (req.body.slug) {
                 postData.slug = req.body.slug;
             }
-    
+
             if (req.body.icon) {
                 postData.icon = req.body.icon;
             }
-    
+
             if (req.body.title) {
                 postData.title = req.body.title;
             }
-    
+
             await bestThingsModel.updateOne({ _id: new mongoose.Types.ObjectId(req.params.id) }, {
                 $set: postData
             });
-    
+
             res.status(200).json({})
-        }catch(err) {
+        } catch (err) {
             res.status(500).json({})
         }
     }
@@ -79,7 +79,7 @@ class BestThings {
 
             res.status(200).json({})
 
-        }catch(err) {
+        } catch (err) {
             res.status(500).json({})
         }
 

@@ -12,24 +12,24 @@ class BestPlaces {
             if (req.body.slug) {
                 postData.slug = req.body.slug;
             }
-    
+
             if (req.body.description) {
                 postData.description = req.body.description;
             }
-    
+
             if (req.body.title) {
                 postData.title = req.body.title;
             }
-    
+
             if (req.body.img) {
                 postData.img = req.body.img;
             }
-    
+
             await bestPlacesModel.create(postData);
-    
+
             res.status(200).json({})
 
-        }catch(err) {
+        } catch (err) {
             res.status(500).json({})
         }
     }
@@ -40,7 +40,7 @@ class BestPlaces {
             const data = await bestPlacesModel.find({}).lean();
 
             res.status(200).json({ data })
-        }catch(err) {
+        } catch (err) {
             res.status(500).json({})
         }
 
@@ -54,26 +54,26 @@ class BestPlaces {
             if (req.body.slug) {
                 postData.slug = req.body.slug;
             }
-    
+
             if (req.body.description) {
                 postData.description = req.body.description;
             }
-    
+
             if (req.body.title) {
                 postData.title = req.body.title;
             }
-    
+
             if (req.body.img) {
                 postData.img = req.body.img;
             }
-    
+
             await bestPlacesModel.updateOne({ _id: new mongoose.Types.ObjectId(req.params.id) }, {
                 $set: postData
             });
-    
+
             res.status(200).json({})
 
-        }catch(err) {
+        } catch (err) {
             res.status(500).json({})
         }
 
@@ -85,7 +85,7 @@ class BestPlaces {
             await bestPlacesModel.deleteOne({ _id: new mongoose.Types.ObjectId(req.params.id) })
 
             res.status(200).json({})
-        }catch(err) {
+        } catch (err) {
             res.status(500).json({})
         }
 
